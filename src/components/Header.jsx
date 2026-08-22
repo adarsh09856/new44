@@ -66,7 +66,9 @@ export const Header = () => {
               Kuzuzangpo La!
             </span>
             <span className="hidden sm:inline text-stone-400">|</span>
-            <span className="hidden sm:inline text-stone-300">Bhutan's #1 Certified Real Estate & Vehicle Marketplace</span>
+            <span className="hidden sm:inline text-stone-300">Bhutan's #1 Certified Marketplace</span>
+            <span className="hidden lg:inline text-stone-500">•</span>
+            <span className="hidden lg:inline text-amber-300/90 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">Dev: Adarsh</span>
           </div>
 
           <div className="flex items-center space-x-4">
