@@ -7,6 +7,7 @@ import { AuthModal } from './components/AuthModal';
 import { ScheduleTourModal } from './components/ScheduleTourModal';
 import { ContactAgentModal } from './components/ContactAgentModal';
 import { LoanCalculatorModal } from './components/LoanCalculatorModal';
+import { BackToTop } from './components/BackToTop';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -68,6 +69,9 @@ const AppContent = () => {
 
       {/* Footer */}
       <Footer />
+
+      {/* Floating Back to Top Button */}
+      <BackToTop />
 
       {/* Floating Modals & Overlays */}
       <AuthModal />

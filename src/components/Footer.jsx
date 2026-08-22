@@ -216,9 +216,9 @@ export const Footer = () => {
           </div>
         </div>
 
-        {/* Copyright & Developer Credit */}
-        <div className="mt-8 pt-6 border-t border-stone-900 text-center text-[11px] text-stone-400 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© {new Date().getFullYear()} Jigme Real Estate & Vehicles Ltd. All rights reserved. • <span className="text-amber-400 font-semibold">Author & Lead Developer: Adarsh</span></p>
+        {/* Copyright */}
+        <div className="mt-8 pt-6 border-t border-stone-900 text-center text-[11px] text-stone-500 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p>© {new Date().getFullYear()} Jigme Real Estate & Vehicles Ltd. All rights reserved.</p>
           <div className="flex items-center space-x-6">
             <button onClick={() => navigateTo('about')} className="hover:underline">About Jigme Estate</button>
             <button onClick={() => navigateTo('contact')} className="hover:underline">Privacy Policy</button>

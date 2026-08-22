@@ -73,28 +73,6 @@ export const AboutUsPage = () => {
         </div>
       </div>
 
-      {/* Lead Architect & Developer Credit Card */}
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-6 sm:p-8 mb-16 border border-amber-500/30 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 font-display font-black text-2xl flex-shrink-0">
-            A
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-display font-bold text-lg text-white">Adarsh</h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-400 text-slate-950">
-                Author & Lead Developer
-              </span>
-            </div>
-            <p className="text-xs text-stone-300 mt-1">
-              Lead Platform Architect & Full-Stack Engineer for Jigme Real Estate & Vehicles Systems.
-            </p>
-          </div>
-        </div>
-        <div className="text-right text-xs text-amber-300 font-semibold">
-          ✦ Bhutan GNH Enterprise Tech Standards
-        </div>
-      </div>
       {/* Bottom CTA */}
       <div className="bg-[#0f172a] rounded-3xl p-8 sm:p-12 text-white text-center">
         <h3 className="text-2xl font-serif font-bold text-white mb-2">
