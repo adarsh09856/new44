@@ -72,10 +72,10 @@ export const Header = () => {
       {/* ========================================================================= */}
       <header className={`w-full bg-white transition-all duration-300 ${isScrolled ? 'opacity-0 -translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
         {/* Top micro-bar for cultural greetings & currency */}
-        <div className="bg-[#0f172a] text-stone-300 text-xs py-1.5 px-4 sm:px-8 border-b border-amber-900/30">
+        <div className="bg-[#0f172a] text-stone-300 text-xs py-1.5 px-3 sm:px-8 border-b border-amber-900/30">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <span className="inline-flex items-center gap-1.5 text-amber-400 font-medium">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <span className="inline-flex items-center gap-1.5 text-amber-400 font-medium text-[11px] sm:text-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 Kuzuzangpo La!
               </span>
@@ -83,14 +83,14 @@ export const Header = () => {
               <span className="hidden sm:inline text-stone-300">Bhutan's #1 Certified Real Estate & Vehicle Marketplace</span>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {/* Currency Selector */}
               <div className="relative">
                 <button
                   onClick={() => setCurrencyDropdownOpen(!currencyDropdownOpen)}
-                  className="flex items-center gap-1.5 text-xs text-stone-200 hover:text-amber-400 transition-colors py-0.5 px-2.5 rounded-full bg-slate-800/90 border border-slate-700 cursor-pointer"
+                  className="flex items-center gap-1.5 text-[11px] sm:text-xs text-stone-200 hover:text-amber-400 transition-colors py-0.5 px-2.5 rounded-full bg-slate-800/90 border border-slate-700 cursor-pointer"
                 >
-                  <Globe className="w-3.5 h-3.5 text-amber-400" />
+                  <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400" />
                   <span>Currency: <strong className="text-white">{currency === 'BTN' ? 'Nu. (BTN)' : currency === 'USD' ? '$ (USD)' : '₹ (INR)'}</strong></span>
                   <ChevronDown className="w-3 h-3 ml-0.5 opacity-70" />
                 </button>
@@ -145,8 +145,8 @@ export const Header = () => {
               onClick={() => handleNavClick('home')} 
               className="flex items-center gap-3 cursor-pointer group"
             >
-              <div className="p-1 rounded-xl bg-amber-50/70 border border-amber-200 group-hover:border-amber-400 transition-colors">
-                <BhutanKnot className="w-9 h-9" color="#9e1b27" secondaryColor="#d97706" />
+              <div className="p-1 rounded-xl bg-amber-50/70 border border-amber-200 group-hover:border-amber-400 transition-colors flex-shrink-0">
+                <BhutanKnot className="w-8 h-8 sm:w-9 sm:h-9" color="#9e1b27" secondaryColor="#d97706" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5 leading-none">
@@ -157,7 +157,7 @@ export const Header = () => {
                     REAL ESTATE
                   </span>
                 </div>
-                <p className="text-[11px] text-stone-500 font-medium tracking-tight mt-0.5">
+                <p className="text-[10px] sm:text-[11px] text-stone-500 font-medium tracking-tight mt-0.5 hidden sm:block">
                   Properties & Vehicles in Bhutan
                 </p>
               </div>
@@ -239,96 +239,109 @@ export const Header = () => {
       </header>
 
       {/* ========================================================================= */}
-      {/* 2. FLOATING LIQUID GLASS CAPSULE NAVBAR ON SCROLL */}
+      {/* 2. FLOATING LIQUID GLASS CAPSULE NAVBAR ON SCROLL (100% Mobile Safe) */}
       {/* ========================================================================= */}
       <div 
-        className={`fixed top-3 sm:top-4 left-0 right-0 z-50 px-3 sm:px-6 transition-all duration-500 ease-out pointer-events-none ${
+        className={`fixed top-2.5 sm:top-4 left-0 right-0 z-50 px-2.5 sm:px-4 md:px-6 transition-all duration-500 ease-out pointer-events-none ${
           isScrolled ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-8'
         }`}
       >
-        <div className="max-w-6xl mx-auto rounded-full liquid-glass-capsule py-2.5 sm:py-3 px-5 sm:px-8 flex items-center justify-between transition-all">
+        <div className="w-full max-w-5xl mx-auto rounded-full liquid-glass-capsule py-2 sm:py-2.5 px-3 sm:px-6 flex items-center justify-between transition-all">
           {/* Logo inside Capsule */}
           <div 
             onClick={() => handleNavClick('home')}
-            className="flex items-center gap-2.5 cursor-pointer group flex-shrink-0"
+            className="flex items-center gap-2 cursor-pointer group flex-shrink-0"
           >
-            <div className="p-1 rounded-full bg-white/70 border border-white/90 shadow-2xs group-hover:scale-105 transition-transform">
-              <BhutanKnot className="w-7 h-7 sm:w-8 sm:h-8" color="#9e1b27" secondaryColor="#d97706" />
+            <div className="p-1 rounded-full bg-white/80 border border-white/90 shadow-2xs group-hover:scale-105 transition-transform flex-shrink-0">
+              <BhutanKnot className="w-6 h-6 sm:w-7 sm:h-7" color="#9e1b27" secondaryColor="#d97706" />
             </div>
-            <div className="flex items-center gap-1.5 leading-none">
-              <span className="font-display font-black text-base sm:text-lg text-[#9e1b27] tracking-tight">JIGME</span>
-              <span className="font-display font-bold text-xs sm:text-sm tracking-wider text-slate-900 uppercase">ESTATE</span>
+            <div className="flex items-center gap-1 leading-none">
+              <span className="font-display font-black text-sm sm:text-base text-[#9e1b27] tracking-tight">JIGME</span>
+              <span className="font-display font-bold text-[11px] sm:text-xs tracking-wider text-slate-900 uppercase hidden sm:inline">ESTATE</span>
             </div>
           </div>
 
-          {/* Capsule Center Navigation Links */}
+          {/* Capsule Center Navigation Links - Hidden on Mobile to avoid any horizontal overflow */}
           <nav className="hidden md:flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm font-bold text-slate-800">
             <button 
               onClick={() => handleNavClick('properties')}
-              className={`px-4 py-2 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
                 activePage === 'properties' ? 'bg-rose-50 text-[#9e1b27]' : 'hover:bg-black/5 hover:text-[#9e1b27]'
               }`}
             >
-              <Home className="w-4 h-4 text-[#9e1b27]" />
+              <Home className="w-3.5 h-3.5 text-[#9e1b27]" />
               <span>Properties</span>
             </button>
             <button 
               onClick={() => handleNavClick('vehicles')}
-              className={`px-4 py-2 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
                 activePage === 'vehicles' ? 'bg-amber-50 text-amber-800' : 'hover:bg-black/5 hover:text-amber-800'
               }`}
             >
-              <Car className="w-4 h-4 text-amber-600" />
+              <Car className="w-3.5 h-3.5 text-amber-600" />
               <span>Vehicles</span>
             </button>
             <button 
               onClick={() => handleNavClick('about')}
-              className={`px-4 py-2 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
                 activePage === 'about' ? 'bg-stone-100 text-slate-900' : 'hover:bg-black/5 hover:text-slate-900'
               }`}
             >
-              <Info className="w-4 h-4 text-blue-600" />
+              <Info className="w-3.5 h-3.5 text-blue-600" />
               <span>About</span>
             </button>
           </nav>
 
           {/* Capsule Right Auth Actions */}
-          <div className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
             {user ? (
-              <div className="flex items-center gap-2 bg-white/70 border border-white/90 py-1.5 px-3.5 rounded-full text-xs font-bold text-slate-800 shadow-2xs">
+              <div className="flex items-center gap-1.5 bg-white/70 border border-white/90 py-1 px-2.5 sm:px-3.5 rounded-full text-xs font-bold text-slate-800 shadow-2xs">
                 <button
                   onClick={() => navigateTo('crm')}
-                  className="flex items-center gap-1.5 cursor-pointer text-xs"
+                  className="flex items-center gap-1.5 cursor-pointer text-[11px] sm:text-xs"
                 >
-                  <LayoutDashboard className="w-4 h-4 text-[#9e1b27]" />
-                  <span className="max-w-[110px] truncate">{user.name}</span>
+                  <LayoutDashboard className="w-3.5 h-3.5 text-[#9e1b27]" />
+                  <span className="max-w-[80px] sm:max-w-[110px] truncate">{user.name}</span>
                 </button>
                 <button onClick={handleLogout} className="p-1 text-slate-400 hover:text-red-600">
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => openModal('login')}
-                  className="px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-bold text-slate-800 hover:text-slate-950 bg-white/60 hover:bg-white/90 border border-white/90 shadow-2xs transition-all cursor-pointer"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => openModal('register')}
-                  className="px-5 sm:px-6 py-2 rounded-full bg-gradient-to-r from-[#9e1b27] to-[#80131d] hover:from-[#b91c1c] hover:to-[#9e1b27] text-xs sm:text-sm font-bold text-white shadow-md shadow-[#9e1b27]/35 hover:shadow-lg transition-all cursor-pointer flex items-center gap-1.5"
-                >
-                  <span>Register</span>
-                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                </button>
-              </div>
+              <>
+                {/* Desktop Buttons */}
+                <div className="hidden md:flex items-center gap-2">
+                  <button
+                    onClick={() => openModal('login')}
+                    className="px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold text-slate-800 hover:text-slate-950 bg-white/60 hover:bg-white/90 border border-white/90 shadow-2xs transition-all cursor-pointer"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => openModal('register')}
+                    className="px-5 py-1.5 rounded-full bg-gradient-to-r from-[#9e1b27] to-[#80131d] hover:from-[#b91c1c] hover:to-[#9e1b27] text-xs sm:text-sm font-bold text-white shadow-md shadow-[#9e1b27]/35 hover:shadow-lg transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>Register</span>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  </button>
+                </div>
+
+                {/* Mobile Single Sign-In Pill */}
+                <div className="flex md:hidden items-center gap-1">
+                  <button
+                    onClick={() => openModal('login')}
+                    className="px-3 py-1 rounded-full text-[11px] font-bold text-[#9e1b27] bg-white/80 border border-rose-200/80 shadow-2xs cursor-pointer"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              </>
             )}
 
             {/* Mobile Hamburger on Floating Capsule */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 rounded-full bg-white/70 border border-white/90 text-slate-800 hover:text-[#9e1b27] cursor-pointer shadow-2xs"
+              className="md:hidden p-1.5 sm:p-2 rounded-full bg-white/80 border border-white/90 text-slate-800 hover:text-[#9e1b27] cursor-pointer shadow-2xs"
               aria-label="Open menu"
             >
               <Menu className="w-4 h-4" />
