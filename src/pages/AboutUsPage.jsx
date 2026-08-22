@@ -71,6 +71,8 @@ export const AboutUsPage = () => {
             Beyond commerce, we build communities that foster peace, environmental harmony, and long-term security for generations of Bhutanese families.
           </p>
         </div>
+      </div>
+
       {/* Lead Architect & Developer Credit Card */}
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-6 sm:p-8 mb-16 border border-amber-500/30 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-4">
