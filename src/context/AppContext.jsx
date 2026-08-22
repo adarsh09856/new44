@@ -68,6 +68,31 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : INITIAL_LEADS;
   });
 
+  // Side-by-Side Compare & Tashi AI state
+  const [compareList, setCompareList] = useState([]);
+  const [compareModalOpen, setCompareModalOpen] = useState(false);
+  const [tashiAIOpen, setTashiAIOpen] = useState(false);
+
+  const toggleCompare = (item, type = 'property') => {
+    const exists = compareList.find(i => i.id === item.id);
+    if (exists) {
+      setCompareList(prev => prev.filter(i => i.id !== item.id));
+      showToast('Removed from comparison', 'info');
+    } else {
+      if (compareList.length >= 3) {
+        showToast('You can compare up to 3 items at a time', 'error');
+        return;
+      }
+      setCompareList(prev => [...prev, { ...item, compareType: type }]);
+      showToast(`Added "${item.title}" to Comparison Tool`, 'success');
+    }
+  };
+
+  const clearCompare = () => {
+    setCompareList([]);
+    setCompareModalOpen(false);
+  };
+
   const [deals, setDeals] = useState(() => {
     const saved = localStorage.getItem('jigme_crm_deals');
     return saved ? JSON.parse(saved) : INITIAL_DEALS;
@@ -506,6 +531,13 @@ export const AppProvider = ({ children }) => {
         addTourBooking,
         inquiries,
         sendInquiry,
+        compareList,
+        toggleCompare,
+        clearCompare,
+        compareModalOpen,
+        setCompareModalOpen,
+        tashiAIOpen,
+        setTashiAIOpen,
         // CRM exports
         leads,
         addLead,

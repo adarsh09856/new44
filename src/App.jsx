@@ -8,6 +8,8 @@ import { ScheduleTourModal } from './components/ScheduleTourModal';
 import { ContactAgentModal } from './components/ContactAgentModal';
 import { LoanCalculatorModal } from './components/LoanCalculatorModal';
 import { BackToTop } from './components/BackToTop';
+import { CompareDrawer } from './components/CompareDrawer';
+import { TashiAIChatModal } from './components/TashiAIChatModal';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -72,6 +74,12 @@ const AppContent = () => {
 
       {/* Floating Back to Top Button */}
       <BackToTop />
+
+      {/* Floating Tashi AI Assistant */}
+      <TashiAIChatModal />
+
+      {/* Floating Compare Drawer */}
+      <CompareDrawer />
 
       {/* Floating Modals & Overlays */}
       <AuthModal />
