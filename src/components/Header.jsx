@@ -192,26 +192,13 @@ export const Header = () => {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-2.5">
-              {/* Admin Panel Quick Access Switcher */}
-              <button
-                onClick={() => navigateTo('crm')}
-                className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-black text-amber-300 font-bold text-xs shadow transition-all cursor-pointer flex items-center gap-1.5 border border-amber-500/30"
-                title="Open CRM & Admin Panel"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5 text-amber-400" />
-                <span>Admin CRM</span>
-              </button>
-
               {user ? (
                 <div className="flex items-center gap-2 bg-stone-100 hover:bg-stone-200 py-1.5 px-3 rounded-full text-xs font-bold text-slate-800">
-                  <button 
-                    onClick={() => navigateTo('crm')}
-                    className="flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <LayoutDashboard className="w-3.5 h-3.5 text-[#9e1b27]" />
-                    <span>{user.name} ({user.role})</span>
-                  </button>
-                  <button onClick={handleLogout} className="p-1 text-slate-400 hover:text-red-600">
+                  <div className="flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-[#9e1b27]" />
+                    <span>{user.name}</span>
+                  </div>
+                  <button onClick={handleLogout} className="p-1 text-slate-400 hover:text-red-600" title="Sign Out">
                     <LogOut className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -406,16 +393,6 @@ export const Header = () => {
                   </div>
 
                   <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigateTo('crm');
-                    }}
-                    className="w-full py-2.5 rounded-xl bg-[#9e1b27] text-white text-xs font-bold shadow cursor-pointer"
-                  >
-                    Open Broker CRM Dashboard
-                  </button>
-
-                  <button
                     onClick={handleLogout}
                     className="w-full py-2 rounded-xl bg-white border border-stone-300 text-xs font-bold text-red-600 hover:bg-red-50 cursor-pointer"
                   >
@@ -493,25 +470,6 @@ export const Header = () => {
                     <span>Contact & Local Desk Support</span>
                   </div>
                   <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                </button>
-              </div>
-
-              {/* Private Portal Access prompt */}
-              <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80">
-                <h5 className="font-bold text-xs text-amber-900 mb-1">
-                  Licensed Brokers & Agents
-                </h5>
-                <p className="text-[11px] text-amber-800/80 mb-2.5 leading-relaxed">
-                  Sign in with your enterprise credentials to access the national listing pipeline.
-                </p>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    openModal('login');
-                  }}
-                  className="w-full py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-xs cursor-pointer"
-                >
-                  Broker CRM Access
                 </button>
               </div>
             </div>

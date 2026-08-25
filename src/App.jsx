@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -11,7 +11,7 @@ import { BackToTop } from './components/BackToTop';
 import { CompareDrawer } from './components/CompareDrawer';
 import { TashiAIChatModal } from './components/TashiAIChatModal';
 
-// Pages
+// Public Pages
 import { HomePage } from './pages/HomePage';
 import { PropertiesPage } from './pages/PropertiesPage';
 import { PropertyDetailPage } from './pages/PropertyDetailPage';
@@ -23,13 +23,70 @@ import { DashboardPage } from './pages/DashboardPage';
 import { AboutUsPage } from './pages/AboutUsPage';
 import { ContactPage } from './pages/ContactPage';
 import { CalculatorPage } from './pages/CalculatorPage';
-import { CRMPage } from './pages/CRMPage';
+
+// Admin / Staff Workspace
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { StaffLoginPortal } from './components/admin/StaffLoginPortal';
 
 const AppContent = () => {
-  const { activePage, user, navigateTo } = useApp();
+  const { activePage, user, setUser, navigateTo } = useApp();
 
-  const renderActivePage = () => {
+  // Listen for direct URL hashtag navigation (e.g. https://domain.com/#/admin)
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#/admin' || window.location.hash === '#admin') {
+        navigateTo('admin');
+      }
+    };
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [navigateTo]);
+
+  // Check if current user possesses verified staff/broker administrative authority
+  const isStaff = user && (
+    ['super_admin', 'admin', 'broker', 'agent', 'editor'].includes(user.role) ||
+    user.permissions?.includes('dashboard:read')
+  );
+
+  // -------------------------------------------------------------
+  // ISOLATED INTERNAL STAFF & CRM WORKSPACE (Unlisted Direct Route)
+  // -------------------------------------------------------------
+  if (activePage === 'admin' || activePage === 'crm') {
+    if (!isStaff) {
+      return (
+        <>
+          <StaffLoginPortal
+            onLoginSuccess={(staffUser) => {
+              setUser(staffUser);
+            }}
+            onBackToPublic={() => {
+              window.location.hash = '';
+              navigateTo('home');
+            }}
+          />
+          <ToastContainer />
+        </>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-[#F4F6F9]">
+        <AdminDashboard
+          onExitAdmin={() => {
+            window.location.hash = '';
+            navigateTo('home');
+          }}
+        />
+        <ToastContainer />
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------
+  // PUBLIC-FACING CUSTOMER MARKETPLACE (Zero Admin Links)
+  // -------------------------------------------------------------
+  const renderActivePublicPage = () => {
     switch (activePage) {
       case 'home':
         return <HomePage />;
@@ -47,17 +104,6 @@ const AppContent = () => {
         return <ListPropertyPage />;
       case 'dashboard':
         return user ? <DashboardPage /> : <HomePage />;
-      case 'crm':
-      case 'admin': {
-        const canAccessAdmin = user && (
-          ['super_admin', 'admin', 'broker', 'editor'].includes(user.role) ||
-          user.permissions?.includes('dashboard:read')
-        );
-        if (!canAccessAdmin) {
-          return <HomePage />;
-        }
-        return <AdminDashboard onExitAdmin={() => navigateTo('home')} />;
-      }
       case 'about':
         return <AboutUsPage />;
       case 'contact':
@@ -71,27 +117,23 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#FAFAF7] font-sans antialiased text-slate-900 selection:bg-[#9e1b27] selection:text-white">
-      {/* Top Header */}
+      {/* 1. Public Top Header (100% Clean, No Admin References) */}
       <Header />
 
-      {/* Main Routed Page Content */}
+      {/* 2. Main Routed Public Page */}
       <main className="flex-1">
-        {renderActivePage()}
+        {renderActivePublicPage()}
       </main>
 
-      {/* Footer */}
+      {/* 3. Public Footer */}
       <Footer />
 
-      {/* Floating Back to Top Button */}
+      {/* 4. Floating Customer Tools */}
       <BackToTop />
-
-      {/* Floating Tashi AI Assistant */}
       <TashiAIChatModal />
-
-      {/* Floating Compare Drawer */}
       <CompareDrawer />
 
-      {/* Floating Modals & Overlays */}
+      {/* 5. Customer Modals (Inquiry, Booking, Auth for Buyers) */}
       <AuthModal />
       <ScheduleTourModal />
       <ContactAgentModal />
