@@ -48,12 +48,16 @@ const AppContent = () => {
       case 'dashboard':
         return user ? <DashboardPage /> : <HomePage />;
       case 'crm':
-      case 'admin':
-        // Strict Auth & RBAC Gate: Only authenticated admins/brokers may render AdminDashboard
-        if (!user || (!['super_admin', 'admin', 'broker'].includes(user.roleId) && !['Super Administrator', 'Broker'].includes(user.role))) {
+      case 'admin': {
+        const canAccessAdmin = user && (
+          ['super_admin', 'admin', 'broker', 'editor'].includes(user.role) ||
+          user.permissions?.includes('dashboard:read')
+        );
+        if (!canAccessAdmin) {
           return <HomePage />;
         }
         return <AdminDashboard onExitAdmin={() => navigateTo('home')} />;
+      }
       case 'about':
         return <AboutUsPage />;
       case 'contact':

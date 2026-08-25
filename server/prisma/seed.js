@@ -165,10 +165,19 @@ async function main() {
   });
   console.log('✓ Seeded complete Role-Permission join table matrix');
 
-  // 4. Seed Seeded Users with Configurable / Strong Credentials
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'JigmeAdminSecure#2026!';
-  const brokerPassword = process.env.SEED_BROKER_PASSWORD || 'JigmeBrokerSecure#2026!';
-  const agentPassword = process.env.SEED_AGENT_PASSWORD || 'JigmeAgentSecure#2026!';
+  // 4. Seed Seeded Users with Configurable / Randomly Generated Credentials
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || crypto.randomBytes(18).toString('base64url');
+  const brokerPassword = process.env.SEED_BROKER_PASSWORD || crypto.randomBytes(18).toString('base64url');
+  const agentPassword = process.env.SEED_AGENT_PASSWORD || crypto.randomBytes(18).toString('base64url');
+
+  if (!process.env.SEED_ADMIN_PASSWORD) {
+    console.log(`\n======================================================`);
+    console.log(`🔐 SEED CREDENTIALS GENERATED (Save these securely):`);
+    console.log(`   Super Admin (admin@jigme.bt): ${adminPassword}`);
+    console.log(`   Broker      (broker@jigme.bt): ${brokerPassword}`);
+    console.log(`   Agent       (agent@jigme.bt): ${agentPassword}`);
+    console.log(`======================================================\n`);
+  }
 
   const passwordHash = await bcrypt.hash(adminPassword, 10);
   const brokerHash = await bcrypt.hash(brokerPassword, 10);
