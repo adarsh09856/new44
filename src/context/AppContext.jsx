@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { INITIAL_PROPERTIES, INITIAL_VEHICLES, INITIAL_AGENTS, DZONGKHAGS } from '../data/initialData';
 import { INITIAL_LEADS, INITIAL_DEALS, INITIAL_ACTIVITIES } from '../data/crmInitialData';
 import confetti from 'canvas-confetti';
+import { api } from '../api/client';
 
 const AppContext = createContext();
 
@@ -11,7 +12,11 @@ export const AppProvider = ({ children }) => {
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [selectedItemType, setSelectedItemType] = useState('property'); // 'property' or 'vehicle'
 
-  // Data Collections with LocalStorage Persistence
+  // Loading States
+  const [loadingProperties, setLoadingProperties] = useState(true);
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
+
+  // Data Collections (initialized with offline fallback, synced with live API)
   const [properties, setProperties] = useState(() => {
     const saved = localStorage.getItem('jigme_properties');
     return saved ? JSON.parse(saved) : INITIAL_PROPERTIES;
@@ -21,6 +26,94 @@ export const AppProvider = ({ children }) => {
     const saved = localStorage.getItem('jigme_vehicles');
     return saved ? JSON.parse(saved) : INITIAL_VEHICLES;
   });
+
+  const [faqs, setFaqs] = useState([]);
+  const [bankRates, setBankRates] = useState([]);
+
+  // Fetch Live Data from Backend API on Mount
+  useEffect(() => {
+    const fetchLiveCatalog = async () => {
+      try {
+        const [propsRes, vehsRes, faqsRes, ratesRes] = await Promise.allSettled([
+          api.getProperties(),
+          api.getVehicles(),
+          api.getFaqs(),
+          api.getBankRates()
+        ]);
+
+        // 1. Sync Properties
+        if (propsRes.status === 'fulfilled' && propsRes.value?.properties?.length > 0) {
+          const liveProps = propsRes.value.properties.map(p => ({
+            id: p.id,
+            title: p.title,
+            location: p.location,
+            dzongkhag: p.location.split(',')[0].trim() || 'Thimphu',
+            priceNu: p.priceNu,
+            priceDisplay: p.priceDisplay || `Nu. ${(p.priceNu / 10000000).toFixed(2)} Cr`,
+            type: p.type,
+            purpose: p.purpose || 'buy',
+            beds: p.beds || 3,
+            baths: p.baths || 2,
+            area: p.area || '15 Decimals',
+            description: p.description,
+            image: p.image,
+            images: p.images ? (typeof p.images === 'string' ? JSON.parse(p.images) : p.images) : [p.image],
+            featured: p.isFeatured || false,
+            verified: p.isVerified !== false,
+            lagthramNo: p.lagthramNo || 'THIM-2026-NLC',
+            plotNo: p.plotNo || 'PL-08',
+            thramHolder: p.thramHolder || 'Verified Landowner',
+            agent: {
+              name: 'Tashi Dorji (Senior Broker)',
+              phone: '+975 17 123 456',
+              email: 'broker@jigme.bt',
+              role: 'Licensed National Broker'
+            }
+          }));
+          setProperties(liveProps);
+        }
+
+        // 2. Sync Vehicles
+        if (vehsRes.status === 'fulfilled' && vehsRes.value?.vehicles?.length > 0) {
+          const liveVehs = vehsRes.value.vehicles.map(v => ({
+            id: v.id,
+            title: v.title,
+            make: v.make,
+            model: v.model,
+            year: v.year,
+            priceNu: v.priceNu,
+            priceDisplay: v.priceDisplay || `Nu. ${(v.priceNu / 100000).toFixed(2)} Lakh`,
+            mileage: v.mileage,
+            fuelType: v.fuelType,
+            transmission: v.transmission,
+            location: v.location,
+            description: v.description,
+            image: v.image,
+            images: v.images ? (typeof v.images === 'string' ? JSON.parse(v.images) : v.images) : [v.image],
+            rstaVerified: v.isVerified !== false
+          }));
+          setVehicles(liveVehs);
+        }
+
+        // 3. Sync FAQs
+        if (faqsRes.status === 'fulfilled' && faqsRes.value?.faqs?.length > 0) {
+          setFaqs(faqsRes.value.faqs);
+        }
+
+        // 4. Sync Dynamic Bank Rates
+        if (ratesRes.status === 'fulfilled' && ratesRes.value?.rates?.length > 0) {
+          setBankRates(ratesRes.value.rates);
+        }
+      } catch (err) {
+        console.warn('[AppContext] API Sync Warning:', err.message);
+      } finally {
+        setLoadingProperties(false);
+        setLoadingVehicles(false);
+      }
+    };
+
+    fetchLiveCatalog();
+  }, []);
 
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem('jigme_favorites');
@@ -68,6 +161,18 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : INITIAL_LEADS;
   });
 
+  const [deals, setDeals] = useState(() => {
+    const saved = localStorage.getItem('jigme_crm_deals');
+    return saved ? JSON.parse(saved) : INITIAL_DEALS;
+  });
+
+  const [activities, setActivities] = useState(() => {
+    const saved = localStorage.getItem('jigme_crm_activities');
+    return saved ? JSON.parse(saved) : INITIAL_ACTIVITIES;
+  });
+
+  const [crmRole, setCrmRole] = useState('Admin / Principal Broker');
+
   // Side-by-Side Compare & Tashi AI state
   const [compareList, setCompareList] = useState([]);
   const [compareModalOpen, setCompareModalOpen] = useState(false);
@@ -93,19 +198,7 @@ export const AppProvider = ({ children }) => {
     setCompareModalOpen(false);
   };
 
-  const [deals, setDeals] = useState(() => {
-    const saved = localStorage.getItem('jigme_crm_deals');
-    return saved ? JSON.parse(saved) : INITIAL_DEALS;
-  });
-
-  const [activities, setActivities] = useState(() => {
-    const saved = localStorage.getItem('jigme_crm_activities');
-    return saved ? JSON.parse(saved) : INITIAL_ACTIVITIES;
-  });
-
-  const [crmRole, setCrmRole] = useState('Admin / Principal Broker');
-
-  // User Auth State - defaults to null (Guest) so "Login" and "Register" buttons display as in screenshot
+  // User Auth State
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('jigme_user');
@@ -141,7 +234,7 @@ export const AppProvider = ({ children }) => {
   // Modals & Floating Overlays
   const [modalState, setModalState] = useState({
     isOpen: false,
-    type: null, // 'auth', 'scheduleTour', 'contactAgent', 'loanCalc', 'imageLightbox', 'addLead', 'addDeal'
+    type: null,
     payload: null
   });
 
@@ -248,16 +341,24 @@ export const AppProvider = ({ children }) => {
 
   // Open & Close Modals
   const openModal = (type, payload = null) => {
-    setModalState({ isOpen: true, type, payload });
+    setModalState({
+      isOpen: true,
+      type,
+      payload
+    });
   };
 
   const closeModal = () => {
-    setModalState({ isOpen: false, type: null, payload: null });
+    setModalState({
+      isOpen: false,
+      type: null,
+      payload: null
+    });
   };
 
-  // Navigate to Page helper
-  const navigateTo = (page, itemId = null, itemType = 'property') => {
-    setActivePage(page);
+  // Navigation Helper
+  const navigateTo = (pageId, itemId = null, itemType = 'property') => {
+    setActivePage(pageId);
     if (itemId) {
       setSelectedItemId(itemId);
       setSelectedItemType(itemType);
@@ -265,58 +366,91 @@ export const AppProvider = ({ children }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Add new Property Listing
-  const addProperty = (newProperty) => {
-    const completeProperty = {
-      ...newProperty,
-      id: `prop-${Date.now()}`,
-      createdDate: new Date().toISOString().split('T')[0],
-      isVerified: true,
-      agent: {
-        id: user?.id || 'usr-default',
-        name: user?.name || 'Private Landlord',
-        title: 'Direct Property Owner',
-        phone: user?.phone || '+975 17 000 111',
-        email: user?.email || 'owner@jigmeestate.bt',
-        avatar: user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-        rating: 5.0,
-        reviewsCount: 1
-      }
-    };
+  // Add Real DB-backed Property Listing
+  const addProperty = async (newProperty) => {
+    try {
+      const res = await api.request('/properties', {
+        method: 'POST',
+        body: {
+          title: newProperty.title,
+          location: `${newProperty.dzongkhag || 'Thimphu'}, ${newProperty.location || 'City Center'}`,
+          priceNu: Number(newProperty.priceNu || newProperty.price || 10000000),
+          priceDisplay: `Nu. ${(Number(newProperty.priceNu || newProperty.price || 10000000) / 10000000).toFixed(2)} Cr`,
+          type: newProperty.type || 'Residential Villa',
+          beds: Number(newProperty.beds || 3),
+          baths: Number(newProperty.baths || 2),
+          area: newProperty.area || '15 Decimals',
+          description: newProperty.description || 'Verified property in Bhutan',
+          image: newProperty.image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+          lagthramNo: newProperty.lagthramNo || 'THIM-2026-NLC',
+          plotNo: newProperty.plotNo || 'PL-08',
+          thramHolder: newProperty.thramHolder || user?.name || 'Verified Landowner'
+        }
+      });
 
-    setProperties(prev => [completeProperty, ...prev]);
-    confetti({
-      particleCount: 120,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-    showToast('Your property listing has been successfully published!', 'success');
-    return completeProperty.id;
+      if (res?.property) {
+        setProperties(prev => [res.property, ...prev]);
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        showToast('Property listing created and submitted for verification!', 'success');
+        return res.property.id;
+      }
+    } catch {
+      // Fallback local persistence
+      const completeProperty = {
+        ...newProperty,
+        id: `prop-${Date.now()}`,
+        createdDate: new Date().toISOString().split('T')[0],
+        verified: true,
+        agent: {
+          name: user?.name || 'Tashi Wangchuk Dorji',
+          phone: user?.phone || '+975 17 123 456',
+          email: user?.email || 'agent@jigmeestate.bt',
+          role: 'Licensed Bhutan Real Estate Agent'
+        }
+      };
+      setProperties(prev => [completeProperty, ...prev]);
+      showToast('Property listing created successfully!', 'success');
+      return completeProperty.id;
+    }
   };
 
-  // Add new Vehicle Listing
-  const addVehicle = (newVehicle) => {
-    const completeVehicle = {
-      ...newVehicle,
-      id: `veh-${Date.now()}`,
-      createdDate: new Date().toISOString().split('T')[0],
-      isVerified: true,
-      seller: {
-        name: user?.name || 'Private Vehicle Seller',
-        phone: user?.phone || '+975 17 000 111',
-        type: 'Verified Seller',
-        dzongkhag: newVehicle.dzongkhag || 'Thimphu'
+  // Add Real DB-backed Vehicle Listing
+  const addVehicle = async (newVehicle) => {
+    try {
+      const res = await api.request('/vehicles', {
+        method: 'POST',
+        body: {
+          title: newVehicle.title,
+          make: newVehicle.make || 'Toyota',
+          model: newVehicle.model || 'Land Cruiser Prado',
+          year: Number(newVehicle.year || 2023),
+          priceNu: Number(newVehicle.priceNu || 4500000),
+          priceDisplay: `Nu. ${(Number(newVehicle.priceNu || 4500000) / 100000).toFixed(2)} Lakh`,
+          mileage: newVehicle.mileage || '45,000 km',
+          fuelType: newVehicle.fuelType || 'Diesel',
+          transmission: newVehicle.transmission || 'Automatic 4WD',
+          location: newVehicle.location || 'Thimphu',
+          description: newVehicle.description || 'RSTA verified vehicle in Bhutan',
+          image: newVehicle.image || 'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?auto=format&fit=crop&w=1200&q=80'
+        }
+      });
+      if (res?.vehicle) {
+        setVehicles(prev => [res.vehicle, ...prev]);
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        showToast('Vehicle listing created successfully!', 'success');
+        return res.vehicle.id;
       }
-    };
-
-    setVehicles(prev => [completeVehicle, ...prev]);
-    confetti({
-      particleCount: 120,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-    showToast('Your vehicle listing has been successfully published!', 'success');
-    return completeVehicle.id;
+    } catch {
+      const completeVehicle = {
+        ...newVehicle,
+        id: `veh-${Date.now()}`,
+        createdDate: new Date().toISOString().split('T')[0],
+        isVerified: true
+      };
+      setVehicles(prev => [completeVehicle, ...prev]);
+      showToast('Vehicle listing created successfully!', 'success');
+      return completeVehicle.id;
+    }
   };
 
   // Delete Listing
@@ -329,8 +463,19 @@ export const AppProvider = ({ children }) => {
     showToast('Listing removed successfully', 'info');
   };
 
-  // Book Tour
-  const addTourBooking = (bookingData) => {
+  // Book Tour (Synchronized with DB Inquiry pipeline)
+  const addTourBooking = async (bookingData) => {
+    try {
+      await api.submitInquiry({
+        name: bookingData.userName || bookingData.clientName || 'Client Tour Request',
+        phone: bookingData.userPhone || bookingData.phone || '+975 17 000 000',
+        message: `Guided Tour Booking for "${bookingData.itemTitle}" scheduled on ${bookingData.date} at ${bookingData.time}. Notes: ${bookingData.notes || 'None'}`,
+        source: 'WEBSITE'
+      });
+    } catch (err) {
+      console.warn('[Tour Booking Inquiry Sync]', err.message);
+    }
+
     const newBooking = {
       id: `tour-${Date.now()}`,
       ...bookingData,
@@ -338,25 +483,23 @@ export const AppProvider = ({ children }) => {
       createdDate: new Date().toISOString().split('T')[0]
     };
     setTourBookings(prev => [newBooking, ...prev]);
-
-    // Also register as CRM activity and lead update
-    logActivity({
-      type: 'tour',
-      title: `Viewing Booked: ${bookingData.itemTitle}`,
-      details: `${bookingData.userName} (${bookingData.userPhone}) on ${bookingData.date} at ${bookingData.time}`,
-      agentName: bookingData.agentName || 'Tashi Wangchuk Dorji'
-    });
-
-    confetti({
-      particleCount: 80,
-      spread: 60,
-      origin: { y: 0.5 }
-    });
+    confetti({ particleCount: 80, spread: 60, origin: { y: 0.5 } });
     showToast('Viewing tour successfully booked! Our broker will contact you shortly.', 'success');
   };
 
-  // Send Inquiry / Message
-  const sendInquiry = (inquiryData) => {
+  // Send Inquiry / Message (Synchronized with DB Inquiry pipeline)
+  const sendInquiry = async (inquiryData) => {
+    try {
+      await api.submitInquiry({
+        name: inquiryData.senderName,
+        phone: inquiryData.senderPhone,
+        message: `Inquiry regarding "${inquiryData.itemTitle}": ${inquiryData.message}`,
+        source: 'WEBSITE'
+      });
+    } catch (err) {
+      console.warn('[Inquiry Submit Sync]', err.message);
+    }
+
     const newInquiry = {
       id: `inq-${Date.now()}`,
       ...inquiryData,
@@ -364,153 +507,48 @@ export const AppProvider = ({ children }) => {
       reply: 'Thank you for contacting Jigme Real Estate. Your assigned broker will reach out to you within 2 hours.'
     };
     setInquiries(prev => [newInquiry, ...prev]);
-
-    // Add as new Lead to CRM!
-    addLead({
-      name: inquiryData.senderName,
-      email: inquiryData.senderEmail,
-      phone: inquiryData.senderPhone,
-      dzongkhag: 'Thimphu',
-      source: 'Website Message',
-      propertyType: 'Property & Vehicle',
-      budgetNu: 15000000,
-      status: 'New',
-      priority: 'High',
-      interestedTitle: inquiryData.itemTitle,
-      notes: inquiryData.message
-    });
-
     showToast('Inquiry sent successfully to the broker!', 'success');
   };
 
-  // CRM CRUD: Add Lead
-  const addLead = (leadData) => {
-    const newLead = {
-      id: `lead-${Date.now()}`,
-      createdDate: new Date().toISOString().split('T')[0],
-      lastContactDate: new Date().toISOString().split('T')[0],
-      assignedAgentId: 'agent-1',
-      assignedAgentName: 'Tashi Wangchuk Dorji',
-      status: 'New',
-      priority: 'Medium',
-      ...leadData
-    };
-    setLeads(prev => [newLead, ...prev]);
-    logActivity({
-      type: 'lead',
-      title: `New Lead Added: ${newLead.name}`,
-      details: `Interested in ${newLead.interestedTitle || newLead.propertyType} (${newLead.dzongkhag})`,
-      agentName: 'CRM System'
-    });
-    showToast(`Lead "${newLead.name}" added to CRM!`, 'success');
-    return newLead.id;
-  };
-
-  // CRM CRUD: Update Lead Status
-  const updateLeadStatus = (leadId, newStatus) => {
-    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus, lastContactDate: new Date().toISOString().split('T')[0] } : l));
-    const lead = leads.find(l => l.id === leadId);
-    logActivity({
-      type: 'deal',
-      title: `Lead Status Updated: ${lead?.name || 'Lead'}`,
-      details: `Moved to stage: ${newStatus}`,
-      agentName: user?.name || 'Tashi Dorji'
-    });
-    showToast(`Lead updated to "${newStatus}"`, 'info');
-  };
-
-  // CRM CRUD: Delete Lead
-  const deleteLead = (leadId) => {
-    setLeads(prev => prev.filter(l => l.id !== leadId));
-    showToast('Lead removed from CRM', 'info');
-  };
-
-  // CRM CRUD: Add Deal
-  const addDeal = (dealData) => {
-    const newDeal = {
-      id: `deal-${Date.now()}`,
-      stage: 'inquiry',
-      probability: 40,
-      assignedAgent: user?.name || 'Tashi Wangchuk Dorji',
-      closingDate: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
-      ...dealData
-    };
-    setDeals(prev => [newDeal, ...prev]);
-    logActivity({
-      type: 'deal',
-      title: `New Pipeline Deal: ${newDeal.title}`,
-      details: `Value: Nu. ${newDeal.dealValueNu.toLocaleString()} with ${newDeal.leadName}`,
-      agentName: newDeal.assignedAgent
-    });
-    confetti({ particleCount: 60, spread: 50 });
-    showToast(`Deal "${newDeal.title}" created in pipeline!`, 'success');
-    return newDeal.id;
-  };
-
-  // CRM CRUD: Update Deal Stage
-  const updateDealStage = (dealId, newStage) => {
-    let prob = 40;
-    if (newStage === 'viewing') prob = 60;
-    if (newStage === 'negotiation') prob = 75;
-    if (newStage === 'legal_thram') prob = 90;
-    if (newStage === 'bank_loan') prob = 95;
-    if (newStage === 'won') prob = 100;
-    if (newStage === 'lost') prob = 0;
-
-    setDeals(prev => prev.map(d => d.id === dealId ? { ...d, stage: newStage, probability: prob } : d));
-    const deal = deals.find(d => d.id === dealId);
-    logActivity({
-      type: 'deal',
-      title: `Deal Advanced: ${deal?.title || 'Deal'}`,
-      details: `Advanced to: ${newStage.toUpperCase()} (${prob}% probability)`,
-      agentName: user?.name || 'Tashi Dorji'
-    });
-
-    if (newStage === 'won') {
-      confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
-      showToast(`🎉 DEAL WON! Congratulations on closing ${deal?.title || 'the sale'}!`, 'success');
-    } else {
-      showToast(`Deal moved to "${newStage}"`, 'info');
-    }
-  };
-
-  // CRM CRUD: Delete Deal
-  const deleteDeal = (dealId) => {
-    setDeals(prev => prev.filter(d => d.id !== dealId));
-    showToast('Deal removed from pipeline', 'info');
-  };
-
-  // CRM Audit Log Activity
-  const logActivity = (activityData) => {
+  // Log CRM Activity
+  const logActivity = (activity) => {
     const newAct = {
       id: `act-${Date.now()}`,
-      time: 'Just now',
-      ...activityData
+      timestamp: 'Just now',
+      ...activity
     };
-    setActivities(prev => [newAct, ...prev.slice(0, 19)]);
+    setActivities(prev => [newAct, ...prev]);
   };
-
-  // Current selected item
-  const currentItem = selectedItemType === 'vehicle'
-    ? vehicles.find(v => v.id === selectedItemId) || vehicles[0]
-    : properties.find(p => p.id === selectedItemId) || properties[0];
 
   return (
     <AppContext.Provider
       value={{
         activePage,
         setActivePage,
-        navigateTo,
         selectedItemId,
         selectedItemType,
-        currentItem,
+        navigateTo,
         properties,
+        setProperties,
         vehicles,
-        agents: INITIAL_AGENTS,
-        dzongkhags: DZONGKHAGS,
+        setVehicles,
+        loadingProperties,
+        loadingVehicles,
+        faqs,
+        bankRates,
         favorites,
         toggleFavorite,
         isFavorite,
+        tourBookings,
+        addTourBooking,
+        inquiries,
+        sendInquiry,
+        leads,
+        deals,
+        activities,
+        crmRole,
+        setCrmRole,
+        logActivity,
         user,
         setUser,
         currency,
@@ -527,10 +565,6 @@ export const AppProvider = ({ children }) => {
         addProperty,
         addVehicle,
         deleteListing,
-        tourBookings,
-        addTourBooking,
-        inquiries,
-        sendInquiry,
         compareList,
         toggleCompare,
         clearCompare,
@@ -538,19 +572,7 @@ export const AppProvider = ({ children }) => {
         setCompareModalOpen,
         tashiAIOpen,
         setTashiAIOpen,
-        // CRM exports
-        leads,
-        addLead,
-        updateLeadStatus,
-        deleteLead,
-        deals,
-        addDeal,
-        updateDealStage,
-        deleteDeal,
-        activities,
-        logActivity,
-        crmRole,
-        setCrmRole
+        dzongkhags: DZONGKHAGS
       }}
     >
       {children}
@@ -558,10 +580,4 @@ export const AppProvider = ({ children }) => {
   );
 };
 
-export const useApp = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
-  return context;
-};
+export const useApp = () => useContext(AppContext);

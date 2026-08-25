@@ -28,6 +28,7 @@ export const HomePage = () => {
     properties, 
     vehicles, 
     dzongkhags, 
+    faqs,
     navigateTo, 
     setSearchFilters, 
     openModal 
@@ -410,7 +411,7 @@ export const HomePage = () => {
         </div>
 
         <div className="space-y-4">
-          {FAQS.map((faq, idx) => (
+          {(faqs.length > 0 ? faqs : FAQS).slice(0, 5).map((faq, idx) => (
             <div key={idx} className="bg-white rounded-2xl p-5 border border-stone-200/90 shadow-sm">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span className="text-[#9e1b27] font-serif">Q.</span>
