@@ -49,6 +49,10 @@ const AppContent = () => {
         return user ? <DashboardPage /> : <HomePage />;
       case 'crm':
       case 'admin':
+        // Strict Auth & RBAC Gate: Only authenticated admins/brokers may render AdminDashboard
+        if (!user || (!['super_admin', 'admin', 'broker'].includes(user.roleId) && !['Super Administrator', 'Broker'].includes(user.role))) {
+          return <HomePage />;
+        }
         return <AdminDashboard onExitAdmin={() => navigateTo('home')} />;
       case 'about':
         return <AboutUsPage />;
