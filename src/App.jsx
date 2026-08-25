@@ -24,9 +24,10 @@ import { AboutUsPage } from './pages/AboutUsPage';
 import { ContactPage } from './pages/ContactPage';
 import { CalculatorPage } from './pages/CalculatorPage';
 import { CRMPage } from './pages/CRMPage';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 
 const AppContent = () => {
-  const { activePage, user } = useApp();
+  const { activePage, user, navigateTo } = useApp();
 
   const renderActivePage = () => {
     switch (activePage) {
@@ -47,7 +48,8 @@ const AppContent = () => {
       case 'dashboard':
         return user ? <DashboardPage /> : <HomePage />;
       case 'crm':
-        return user ? <CRMPage /> : <HomePage />;
+      case 'admin':
+        return <AdminDashboard onExitAdmin={() => navigateTo('home')} />;
       case 'about':
         return <AboutUsPage />;
       case 'contact':

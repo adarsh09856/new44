@@ -191,7 +191,17 @@ export const Header = () => {
             </nav>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2.5">
+              {/* Admin Panel Quick Access Switcher */}
+              <button
+                onClick={() => navigateTo('crm')}
+                className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-black text-amber-300 font-bold text-xs shadow transition-all cursor-pointer flex items-center gap-1.5 border border-amber-500/30"
+                title="Open CRM & Admin Panel"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5 text-amber-400" />
+                <span>Admin CRM</span>
+              </button>
+
               {user ? (
                 <div className="flex items-center gap-2 bg-stone-100 hover:bg-stone-200 py-1.5 px-3 rounded-full text-xs font-bold text-slate-800">
                   <button 
